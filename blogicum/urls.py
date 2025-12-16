@@ -16,10 +16,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 
-# blogicum/urls.py - ПРАВИЛЬНО
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('blog.urls', namespace='blog')),
-    path('pages/', include('pages.urls', namespace='pages')), # ← ОДИН раз
-    path('auth/', include('users.urls', namespace='users')),
+    path('', include('blog.urls')),
+    path('pages/', include('pages.urls')),
 ]

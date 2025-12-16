@@ -1,12 +1,24 @@
-{% extends "base.html" %}
-{% block title %}
-  Лента записей
-{% endblock %}
+{% extends 'base.html' %}
+
 {% block content %}
-  {% for post in page_obj %}
-    <article class="mb-5">
-      {% include "includes/post_card.html" %}
-    </article>
-  {% endfor %}
-  {% include "includes/paginator.html" %}
+<h1>Последние публикации</h1>
+
+{% for post in post_list %}
+  <article>
+    <h2><a href="{% url 'blog:post_detail' post.id %}">{{ post.title }}</a></h2>
+    <p>{{ post.text|truncatewords:30 }}</p>
+    
+    <p>Категория: <a href="{% url 'blog:category_posts' post.category.slug %}">{{ post.category.title }}</a></p>
+    
+    {% if post.location %}
+      <p>Местоположение: {{ post.location.name }}</p>
+    {% endif %}
+    
+    <time datetime="{{ post.pub_date|date:'Y-m-d' }}">
+      {{ post.pub_date|date:"d E Y" }}
+    </time>
+  </article>
+{% empty %}
+  <p>Пока нет публикаций.</p>
+{% endfor %}
 {% endblock %}

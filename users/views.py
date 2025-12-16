@@ -1,94 +1,64 @@
-# blogicum/users/views.py
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.views import LoginView, LogoutView
-from django.contrib.auth.forms import PasswordChangeForm
-from django.contrib.auth import update_session_auth_hash
-from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse_lazy
-from django.views.generic import CreateView, DetailView, UpdateView
+from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-
-from .forms import CustomUserCreationForm
-
-
-class CustomLoginView(LoginView):
-    """Кастомный вход пользователя."""
-    template_name = 'users/login.html'
-    redirect_authenticated_user = True
-
-
-class CustomLogoutView(LogoutView):
-    """Кастомный выход пользователя."""
-    template_name = 'users/logged_out.html'
+from django.views.generic import DetailView, ListView
+from django.urls import reverse_lazy
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.views.generic.edit import UpdateView
+from .forms import CustomUserCreationForm, ProfileUpdateForm
+from ice_cream.models import IceCream
+from django.core.paginator import Paginator
 
 
-class SignUpView(CreateView):
-    """Регистрация нового пользователя."""
-    form_class = CustomUserCreationForm
-    success_url = reverse_lazy('blog:index')
-    template_name = 'users/signup.html'
+def registration(request):
+    """Регистрация нового пользователя"""
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('homepage:index')
+    else:
+        form = CustomUserCreationForm()
+    
+    return render(request, 'users/registration.html', {'form': form})
 
-    def form_valid(self, form):
-        response = super().form_valid(form)
-        messages.success(
-            self.request,
-            'Вы успешно зарегистрировались! Теперь вы можете войти.'
-        )
-        return response
 
-
-class ProfileDetailView(DetailView):
-    """Просмотр профиля пользователя."""
+class UserProfileView(DetailView):
+    """Страница профиля пользователя"""
     model = User
     template_name = 'users/profile.html'
     context_object_name = 'profile_user'
-    slug_field = 'username'
-    slug_url_kwarg = 'username'
-
+    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Получаем публикации пользователя (пример из блога)
-        from blog.models import Post  # Импортируем здесь, чтобы избежать циклического импорта
-        context['user_posts'] = Post.objects.filter(
-            author=self.object
-        ).order_by('-created_at')[:10]
+        user = self.get_object()
+        
+        # Получаем публикации пользователя с пагинацией
+        posts = IceCream.objects.filter(
+            is_published=True,
+            owner=user
+        ).order_by('-created_at')
+        
+        paginator = Paginator(posts, 10)  # 10 постов на страницу
+        page_number = self.request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        
+        context['page_obj'] = page_obj
+        context['is_owner'] = self.request.user == user
         return context
 
 
-class ProfileUpdateView(LoginRequiredMixin, UpdateView):
-    """Редактирование профиля пользователя."""
+class ProfileUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    """Редактирование профиля"""
     model = User
+    form_class = ProfileUpdateForm
     template_name = 'users/profile_edit.html'
-    fields = ['first_name', 'last_name', 'username', 'email']
-    success_url = reverse_lazy('users:profile_edit')
-
-    def get_object(self, queryset=None):
-        return self.request.user
-
-    def form_valid(self, form):
-        messages.success(self.request, 'Профиль успешно обновлен!')
-        return super().form_valid(form)
-
-
-@login_required
-def password_change(request):
-    """Изменение пароля пользователя."""
-    if request.method == 'POST':
-        form = PasswordChangeForm(request.user, request.POST)
-        if form.is_valid():
-            user = form.save()
-            update_session_auth_hash(request, user)
-            messages.success(request, 'Ваш пароль был успешно изменен!')
-            return redirect('users:profile', username=request.user.username)
-    else:
-        form = PasswordChangeForm(request.user)
     
-    return render(request, 'users/password_change.html', {'form': form})
-
-
-@login_required
-def password_change_done(request):
-    """Страница успешного изменения пароля."""
-    return render(request, 'users/password_change_done.html')
+    def get_success_url(self):
+        return reverse_lazy('users:profile', kwargs={'username': self.object.username})
+    
+    def test_func(self):
+        user = self.get_object()
+        return self.request.user == user
