@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Профиль {{ profile_user.username }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Информация о пользователе</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Логин:</strong> {{ profile_user.username }}</p>
+                    <p><strong>Имя:</strong> {{ profile_user.first_name|default:"Не указано" }}</p>
+                    <p><strong>Фамилия:</strong> {{ profile_user.last_name|default:"Не указана" }}</p>
+                    <p><strong>Email:</strong> {{ profile_user.email|default:"Не указан" }}</p>
+                    <p><strong>Дата регистрации:</strong> {{ profile_user.date_joined|date:"d.m.Y" }}</p>
+                    
+                    {% if is_owner %}
+                        <hr>
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'users:profile_edit' %}" class="btn btn-primary">
+                                Редактировать профиль
+                            </a>
+                            <a href="{% url 'users:password_change' %}" class="btn btn-warning">
+                                Изменить пароль
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Публикации пользователя</h5>
+                    <span class="badge bg-secondary">{{ posts.paginator.count }} постов</span>
+                </div>
+                <div class="card-body">
+                    {% if posts %}
+                        {% for post in posts %}
+                            <div class="card mb-2">
+                                {% if post.image %}
+                                    <img src="{{ post.image.url }}" class="card-img-top" alt="{{ post.title }}" style="height: 200px; object-fit: cover;">
+                                {% endif %}
+                                <div class="card-body">
+                                    <h6>
+                                        <a href="{% url 'blog:post_detail' post.id %}">{{ post.title }}</a>
+                                        {% if not post.is_published %}
+                                            <span class="badge bg-warning">Черновик</span>
+                                        {% endif %}
+                                        {% if post.pub_date > timezone.now %}
+                                            <span class="badge bg-info">Отложен</span>
+                                        {% endif %}
+                                    </h6>
+                                    <p class="card-text">{{ post.text|truncatewords:20 }}</p>
+                                    <div class="d-flex justify-content-between">
+                                        <small class="text-muted">
+                                            {{ post.pub_date|date:"d.m.Y H:i" }}
+                                            {% if post.category %}
+                                                | {{ post.category.title }}
+                                            {% endif %}
+                                        </small>
+                                        <small class="text-muted">
+                                            {{ post.comments.count }} комментариев
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        
+                        <!-- Пагинация -->
+                        {% if posts.has_other_pages %}
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination justify-content-center">
+                                    {% if posts.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ posts.previous_page_number }}">&laquo;</a>
+                                        </li>
+                                    {% endif %}
+                                    
+                                    {% for i in posts.paginator.page_range %}
+                                        {% if posts.number == i %}
+                                            <li class="page-item active">
+                                                <span class="page-link">{{ i }}</span>
+                                            </li>
+                                        {% else %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    {% if posts.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ posts.next_page_number }}">&raquo;</a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        {% endif %}
+                    {% else %}
+                        <p class="text-center text-muted">У пользователя пока нет публикаций</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
