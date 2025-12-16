@@ -17,6 +17,10 @@ class PostForm(forms.ModelForm):
             'pub_date': 'Формат: ГГГГ-ММ-ДД ЧЧ:ММ:СС',
             'image': 'Загрузите изображение для поста',
         }
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pub_date:
+            self.initial['pub_date'] = self.instance.pub_date.strftime('%Y-%m-%dT%H:%M')
 
 class CommentForm(forms.ModelForm):
     class Meta:
