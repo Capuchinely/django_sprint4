@@ -7,7 +7,7 @@ from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic.edit import UpdateView
 from .forms import CustomUserCreationForm, ProfileUpdateForm
-from ice_cream.models import IceCream
+from ice_cream.models import IceCream  # предположим, что у вас есть модель IceCream
 from django.core.paginator import Paginator
 
 

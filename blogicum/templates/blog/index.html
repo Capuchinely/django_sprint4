@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 {% extends 'base.html' %}
 
 {% block content %}
@@ -22,17 +21,4 @@
 {% empty %}
   <p>Пока нет публикаций.</p>
 {% endfor %}
-=======
-{% extends "base.html" %}
-{% block title %}
-  Лента записей
-{% endblock %}
-{% block content %}
-  {% for post in page_obj %}
-    <article class="mb-5">
-      {% include "includes/post_card.html" %}
-    </article>
-  {% endfor %}
-  {% include "includes/paginator.html" %}
->>>>>>> 245849ff9b049ed711f8fe5b0b0d2cbf32ee55fe
 {% endblock %}

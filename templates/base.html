@@ -1,106 +1,26 @@
+{% load static %}
+{% load django_bootstrap5 %}
 <!DOCTYPE html>
 <html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <title>{% block title %}Блогикум{% endblock %}</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            line-height: 1.6;
-        }
-        header {
-            background: #f8f9fa;
-            padding: 1rem 0;
-            border-bottom: 1px solid #dee2e6;
-        }
-        nav {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #333;
-            text-decoration: none;
-        }
-        .nav-links {
-            display: flex;
-            list-style: none;
-            gap: 2rem;
-        }
-        .nav-links a {
-            text-decoration: none;
-            color: #333;
-        }
-        .nav-links a:hover {
-            color: #007bff;
-        }
-        main {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 2rem;
-        }
-        .post-list {
-            list-style: none;
-            padding: 0;
-        }
-        .post-item {
-            background: #f8f9fa;
-            margin: 1rem 0;
-            padding: 1.5rem;
-            border-radius: 5px;
-            border-left: 4px solid #007bff;
-        }
-        .post-meta {
-            color: #666;
-            font-size: 0.9rem;
-            margin-bottom: 0.5rem;
-        }
-        .read-more {
-            color: #007bff;
-            text-decoration: none;
-        }
-        .read-more:hover {
-            text-decoration: underline;
-        }
-        footer {
-            background: #f8f9fa;
-            text-align: center;
-            padding: 1rem 0;
-            margin-top: 2rem;
-            border-top: 1px solid #dee2e6;
-        }
-        .category-title {
-            color: #333;
-            margin-bottom: 1.5rem;
-        }
-    </style>
-</head>
-<body>
-    <header>
-        <nav>
-            <a href="{% url 'blog:index' %}" class="logo">Блогикум</a>
-            <ul class="nav-links">
-                <li><a href="{% url 'blog:index' %}">Лента записей</a></li>
-                <li><a href="{% url 'pages:about' %}">О проекте</a></li>
-                <li><a href="{% url 'pages:rules' %}">Наши правила</a></li>
-            </ul>
-        </nav>
-    </header>
-
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="{% static 'img/fav/favicon.ico' %}" type="image">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'img/fav/apple-touch-icon.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'img/fav/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'img/fav/favicon-16x16.png' %}">
+    <title>
+      {% block title %}{% endblock %}
+    </title>
+    {% bootstrap_css %}
+  </head>
+  <body>
+    {% include "includes/header.html" %}
     <main>
-        {% block content %}
-        {% endblock %}
+      <div class="container py-5">
+        {% block content %}{% endblock %}
+      </div>
     </main>
-
-    <footer>
-        <p>© Блогикум</p>
-    </footer>
-</body>
+    {% include "includes/footer.html" %}
+  </body>
 </html>

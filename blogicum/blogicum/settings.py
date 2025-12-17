@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    #'debug_toolbar',
     'blog',
     'pages'
 ]
@@ -132,16 +133,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # INTERNAL_IPS = [
 #     '127.0.0.1',
 # ]
-
-# Пагинация
-POSTS_PER_PAGE = 10
-
-# Изображения
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
-
-EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
-EMAIL_FILE_PATH = BASE_DIR / 'sent_emails'
 
 
 class BlogConfig(AppConfig):

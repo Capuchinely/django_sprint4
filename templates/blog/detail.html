@@ -1,162 +1,42 @@
-<!-- templates/blog/detail.html -->
 {% extends "base.html" %}
-{% load thumbnail %}
-{% load django_bootstrap5 %}
-
-{% block title %}{{ post.title }} | Анфиса для друзей{% endblock %}
-
+{% block title %}
+  {{ post.title }} | {% if post.location and post.location.is_published %}{{ post.location.name }}{% else %}Планета Земля{% endif %} |
+  {{ post.pub_date|date:"d E Y" }}
+{% endblock %}
 {% block content %}
-  <div class="container py-5">
-    <!-- Сообщения -->
-    {% bootstrap_messages %}
-    
-    <!-- Пост -->
-    <article class="card mb-4">
-      {% if post.image %}
-        <div class="card-img-top">
-          {% thumbnail post.image "800" crop="center" as im %}
-            <img src="{{ im.url }}" class="img-fluid w-100" alt="{{ post.title }}">
-          {% endthumbnail %}
-        </div>
-      {% endif %}
+  <div class="col d-flex justify-content-center">
+    <div class="card" style="width: 40rem;">
       <div class="card-body">
-        <h1 class="card-title">{{ post.title }}</h1>
-        <p class="card-text">{{ post.text|linebreaks }}</p>
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <small class="text-muted">
-              Автор: 
-              <a href="{% url 'users:profile' post.author.username %}">
-                {{ post.author.username }}
-              </a>
-              | {{ post.pub_date|date:"d.m.Y H:i" }}
-              {% if post.location %}
-                | {{ post.location.name }}
-              {% endif %}
-            </small>
-          </div>
-          {% if user == post.author %}
-            <div>
-              <a href="{% url 'blog:post_edit' post.id %}" class="btn btn-sm btn-warning">
-                Редактировать
-              </a>
-              <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" 
-                      data-bs-target="#deleteModal">
-                Удалить
-              </button>
-            </div>
-          {% endif %}
-        </div>
-      </div>
-    </article>
-    
-    <!-- Комментарии -->
-    <section class="mb-4">
-      <h3>Комментарии ({{ post.comments.count }})</h3>
-      
-      <!-- Форма добавления комментария -->
-      {% if user.is_authenticated %}
-        <div class="card mb-3">
-          <div class="card-body">
-            <form method="post" action="{% url 'blog:add_comment' post.id %}">
-              {% csrf_token %}
-              {% bootstrap_form comment_form %}
-              {% bootstrap_button button_type="submit" content="Добавить комментарий" %}
-            </form>
-          </div>
-        </div>
-      {% else %}
-        <div class="alert alert-info">
-          <a href="{% url 'users:login' %}?next={{ request.path }}">Войдите</a>, 
-          чтобы оставить комментарий.
-        </div>
-      {% endif %}
-      
-      <!-- Список комментариев -->
-      {% for comment in comments %}
-        <div class="card mb-2">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-start">
-              <div>
-                <strong>{{ comment.author.username }}</strong>
-                <small class="text-muted ms-2">{{ comment.created_at|date:"d.m.Y H:i" }}</small>
-                <p class="mt-2 mb-0">{{ comment.text|linebreaks }}</p>
-              </div>
-              {% if user == comment.author %}
-                <div>
-                  <a href="{% url 'blog:edit_comment' post.id comment.id %}" 
-                     class="btn btn-sm btn-outline-warning">
-                    ✏️
-                  </a>
-                  <button type="button" class="btn btn-sm btn-outline-danger" 
-                          data-bs-toggle="modal" 
-                          data-bs-target="#deleteCommentModal{{ comment.id }}">
-                    🗑️
-                  </button>
-                </div>
-              {% endif %}
-            </div>
-          </div>
-        </div>
-        
-        <!-- Модальное окно удаления комментария -->
-        {% if user == comment.author %}
-          <div class="modal fade" id="deleteCommentModal{{ comment.id }}" tabindex="-1">
-            <div class="modal-dialog">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title">Удаление комментария</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                  <p>Вы уверены, что хотите удалить этот комментарий?</p>
-                  <div class="alert alert-warning">
-                    {{ comment.text|truncatewords:20 }}
-                  </div>
-                </div>
-                <div class="modal-footer">
-                  <form method="post" 
-                        action="{% url 'blog:delete_comment' post.id comment.id %}">
-                    {% csrf_token %}
-                    <button type="button" class="btn btn-secondary" 
-                            data-bs-dismiss="modal">Отмена</button>
-                    <button type="submit" class="btn btn-danger">Удалить</button>
-                  </form>
-                </div>
-              </div>
-            </div>
+        {% if post.image %}
+          <a href="{{ post.image.url }}" target="_blank">
+            <img class="border-3 rounded img-fluid img-thumbnail mb-2 mx-auto d-block" src="{{ post.image.url }}">
+          </a>
+        {% endif %}
+        <h5 class="card-title">{{ post.title }}</h5>
+        <h6 class="card-subtitle mb-2 text-muted">
+          <small>
+            {% if not post.is_published %}
+              <p class="text-danger">Пост снят с публикации админом</p>
+            {% elif not post.category.is_published %}
+              <p class="text-danger">Выбранная категория снята с публикации админом</p>
+            {% endif %}
+            {{ post.pub_date|date:"d E Y, H:i" }} | {% if post.location and post.location.is_published %}{{ post.location.name }}{% else %}Планета Земля{% endif %}<br>
+            От автора <a class="text-muted" href="{% url 'blog:profile' post.author.username %}">@{{ post.author.username }}</a> в
+            категории {% include "includes/category_link.html" %}
+          </small>
+        </h6>
+        <p class="card-text">{{ post.text|linebreaksbr }}</p>
+        {% if user == post.author %}
+          <div class="mb-2">
+            <a class="btn btn-sm text-muted" href="{% url 'blog:edit_post' post.id %}" role="button">
+              Отредактировать публикацию
+            </a>
+            <a class="btn btn-sm text-muted" href="{% url 'blog:delete_post' post.id %}" role="button">
+              Удалить публикацию
+            </a>
           </div>
         {% endif %}
-      {% empty %}
-        <div class="alert alert-secondary">
-          Комментариев пока нет. Будьте первым!
-        </div>
-      {% endfor %}
-    </section>
-  </div>
-  
-  <!-- Модальное окно удаления поста -->
-  <div class="modal fade" id="deleteModal" tabindex="-1">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Удаление публикации</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <p>Вы уверены, что хотите удалить публикацию "{{ post.title }}"?</p>
-          <div class="alert alert-danger">
-            Это действие нельзя отменить!
-          </div>
-        </div>
-        <div class="modal-footer">
-          <form method="post" action="{% url 'blog:post_delete' post.id %}">
-            {% csrf_token %}
-            <button type="button" class="btn btn-secondary" 
-                    data-bs-dismiss="modal">Отмена</button>
-            <button type="submit" class="btn btn-danger">Удалить</button>
-          </form>
-        </div>
+        {% include "includes/comments.html" %}
       </div>
     </div>
   </div>

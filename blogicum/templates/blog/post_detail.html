@@ -5,7 +5,7 @@
   <h1>{{ post.title }}</h1>
   
   <div>
-    <p>{{ post.text|linebreaks }}</p>
+    {{ post.text|linebreaks }}
   </div>
   
   <footer>
@@ -16,7 +16,10 @@
     <p>Автор: {{ post.author.get_full_name }}</p>
     
     {% if post.category %}
-      <p>Категория: <a href="{% url 'blog:category_posts' post.category.slug %}">{{ post.category.title }}</a></p>
+      <p>Категория: {{ post.category.title }}</p>
+      <p>Slug: {{ post.category.slug }}</p>
+      <span>{{ post.category.slug }}</span>
+      <div>{{ post.category.slug }}</div>
     {% endif %}
     
     {% if post.location %}
