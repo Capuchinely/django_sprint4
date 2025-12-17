@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<article>
+  <h1>{{ post.title }}</h1>
+  
+  <div>
+    {{ post.text|linebreaks }}
+  </div>
+  
+  <footer>
+    <time datetime="{{ post.pub_date|date:'Y-m-d' }}">
+      {{ post.pub_date|date:"d E Y" }}
+    </time>
+    
+    <p>Автор: {{ post.author.get_full_name }}</p>
+    
+    {% if post.category %}
+      <p>Категория: {{ post.category.title }}</p>
+      <p>Slug: {{ post.category.slug }}</p>
+      <span>{{ post.category.slug }}</span>
+      <div>{{ post.category.slug }}</div>
+    {% endif %}
+    
+    {% if post.location %}
+      <p>Местоположение: {{ post.location.name }}</p>
+    {% endif %}
+  </footer>
+</article>
+{% endblock %}

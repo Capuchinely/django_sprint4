@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Категория: {{ category.title }}</h1>
+<p>Идентификатор: {{ category.slug }}</p>
+
+{% for post in post_list %}
+  <article>
+    <h2><a href="{% url 'blog:post_detail' post.id %}">{{ post.title }}</a></h2>
+    <p>{{ post.text|truncatewords:30 }}</p>
+    
+    {% if post.location %}
+      <p>Местоположение: {{ post.location.name }}</p>
+    {% endif %}
+    
+    <p><a href="{% url 'blog:post_detail' post.id %}">Читать далее</a></p>
+  </article>
+{% empty %}
+  <p>В этой категории пока нет публикаций.</p>
+{% endfor %}
+{% endblock %}
